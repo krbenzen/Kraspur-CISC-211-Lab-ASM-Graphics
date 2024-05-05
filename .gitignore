@@ -41,3 +41,5 @@
 *.swp
 *.c~
 *.h~
+/graphics/firmware/asmGraphicsProj.X/build/
+/graphics/firmware/asmGraphicsProj.X/dist/
