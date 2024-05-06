@@ -50,17 +50,30 @@
 #include "cDraw.h"  // lab print funcs
 #endif
 
-drawCommand scene0[] = {
-    {0,0,1},
-    {1,1,0},
-    {5,5,0},
-    {-3,0,0},
-    {0,-2,0},
-    {0,0,0},  // pause
-    {0,0,0},  // pause
-    {0,0,0}  // pause
-};
+#define DRAW_END_CMD (-99)
 
+static drawCommand scene1[] = {
+    {-2,0,0},
+    {-2,0,0},
+    {0,2,0},
+    {0,2,0},
+    {2,0,0},
+    {2,0,0},
+    {2,0,0},
+    {2,0,0},
+    {0,-2,0},
+    {0,-2,0},
+    {0,-2,0},
+    {0,-2,0},
+    {0,-2,0},
+    {-2,0,0},
+    {-2,0,0},
+    {-2,0,0},
+    {-2,0,0},
+    {0,2,0},
+    {0,2,0},
+    {DRAW_END_CMD,DRAW_END_CMD,DRAW_END_CMD}
+};
 
 // Define the global that gives access to the student's name
 extern char * nameStrPtr;
@@ -121,69 +134,89 @@ int main ( void )
     RTC_Timer32CounterSet(0);
     RTC_Timer32Start();
     
-
-    int32_t idleCount = 0;
-
-    // Toggle the LED to show proof of life
-    LED0_Toggle();
-
-    // reset the state variables
-    isRTCExpired = false;
-    isUSARTTxComplete = false;
-    
-    drawCommand cmd = {0,0,1}; // vert, hor shift, and reset cmd values
-
     bool use32bitMode = true; // students use 32bit words
 
 #if PROF_MODE   // call the C demo routine (in PROF repo only)
-    uint64_t * bufPtr = cDraw(cmd);
     use32bitMode = false; // prof c demo code uses 64bit words
-#else           // call student's asm draw routine
-    uint64_t * bufPtr = asmDraw(cmd[0], cmd[1], cmd[2]); // send a reset
 #endif
-    
-    printBuf(nameStrPtr, bufPtr, idleCount, cmd, use32bitMode,
-            &isUSARTTxComplete);
-    // printBuf(nameStrPtr, rowA00ptr, idleCount, cmd, use32bitMode, &isUSARTTxComplete);
 
-    // spin here until the timer has expired
-    //while  (false == isUSARTTxComplete ); 
-    while (isRTCExpired == false);
+    int32_t idleCount = 0;
 
-    ++idleCount;
-
-    while(1)
+    while(1)  // Outer loop starts with a reset command to asmDraw
     {
+
         // Toggle the LED to show proof of life
         LED0_Toggle();
-        
+
         // reset the state variables
         isRTCExpired = false;
         isUSARTTxComplete = false;
-        
-        // create a non-reset command for testing purposes
-        cmd[VERT_SHIFT] = -2;
-        cmd[HOR_SHIFT] =  -4;
-        cmd[RESET_CMD] =  0;
-        
-        // bufPtr = asmDraw(cmd[0], cmd[1], cmd[2]);
-        
+
+        // send a reset command
+        drawCommand cmd = {0,0,1}; // vert, hor shift, and reset cmd values
+
+
 #if PROF_MODE   // call the C demo routine (in PROF repo only)
-        bufPtr = cDraw(cmd);
+        uint64_t * bufPtr = cDraw(cmd);
 #else           // call student's asm draw routine
-        bufPtr = asmDraw(cmd[0], cmd[1], cmd[2]); // send a reset
+        uint64_t * bufPtr = asmDraw(cmd[0], cmd[1], cmd[2]); // send a reset
 #endif
-        
+
         printBuf(nameStrPtr, bufPtr, idleCount, cmd, use32bitMode,
                 &isUSARTTxComplete);
-                
+        // printBuf(nameStrPtr, rowA00ptr, idleCount, cmd, use32bitMode, &isUSARTTxComplete);
+
         // spin here until the timer has expired
-        //while  (false == isUSARTTxComplete ); 
         while (isRTCExpired == false);
-        
+
         ++idleCount;
 
-    }
+        int commandCount = 0;
+ 
+        while(1)    // read a sequence of frame commands, then start over
+        {
+            if (scene1[commandCount][0] == DRAW_END_CMD)
+            {
+                // break out of inner loop
+                break;
+            }
+            // Toggle the LED to show proof of life
+            LED0_Toggle();
+
+            // reset the state variables
+            isRTCExpired = false;
+            isUSARTTxComplete = false;
+
+#if 0
+            // create a non-reset command for testing purposes
+            cmd[VERT_SHIFT] = -2;
+            cmd[HOR_SHIFT] =  -4;
+            cmd[RESET_CMD] =  0;
+#endif
+
+            // bufPtr = asmDraw(cmd[0], cmd[1], cmd[2]);
+
+    #if PROF_MODE   // call the C demo routine (in PROF repo only)
+            bufPtr = cDraw(scene1[commandCount]);
+    #else           // call student's asm draw routine
+            bufPtr = asmDraw(scene1[commandCount][0], 
+                    scene1[commandCount][1], 
+                    scene1[commandCount][2]); 
+    #endif
+
+            printBuf(nameStrPtr, bufPtr, idleCount, scene1[commandCount], use32bitMode,
+                    &isUSARTTxComplete);
+
+            // spin here until the timer has expired
+            //while  (false == isUSARTTxComplete ); 
+            while (isRTCExpired == false);
+
+            ++idleCount;
+            ++commandCount;
+
+        } //  end -- inner while loop
+    } //  end -- outer while loop
+        
                 
             
     /* Execution should not come here during normal operation */
