@@ -37,11 +37,8 @@ asmFrameCounter: .word 0
 rowA00ptr: .word rowA00
 
 // Flying Saucer!!!
-<<<<<<< HEAD
 // If you choose to modify this starting graphic, make sure your replacement
 // is exactly 2 words wide and 20 rows high, just like this one.
-=======
->>>>>>> e59a3d080ff950c91e7d7febd8f9f7f536817744
 rowA00: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
 rowA01: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
 rowA02: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
@@ -62,13 +59,8 @@ rowA16: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000
 rowA17: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
 rowA18: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
 rowA19: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
-<<<<<<< HEAD
 
-
-=======
- 
->>>>>>> e59a3d080ff950c91e7d7febd8f9f7f536817744
-// display buffers 0 and 1: 2 words (64 bits) wide, by 20 words high,
+ // display buffers 0 and 1: 2 words (64 bits) wide, by 20 words high,
 // initialized at boot time to pre-determined values
 // REMEMBER! These are only initialized once, before the first time asmDraw
 // is called. If you want to clear them (i.e. set all bits to 0), you need to
@@ -159,14 +151,15 @@ getNextFrame:
     // if the cycle count is an odd number set it to the alternate buffer
     TST r5,1
     LDRNE r0,=buf1 
-    B done // branch for clarity...
+    B done // branch for clarity... in case someone adds code after this.
         
     done:
     
     // Students:
     // If you just want to see the UFO, uncomment the next line
-    // But this is only for demonstration purposes! Your final code should
+    // But this is ONLY for demonstration purposes! Your final code should
     // shold flip between buf0 and buf1 and return one of those two.
+    
     // LDR r0,=rowA00
  
     // restore the caller's registers, as required by the ARM calling convention
