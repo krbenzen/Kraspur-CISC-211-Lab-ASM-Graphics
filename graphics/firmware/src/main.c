@@ -53,26 +53,36 @@
 #define DRAW_END_CMD (-99)
 
 static drawCommand scene1[] = {
+    {-2,0,0}, // move up
     {-2,0,0},
     {-2,0,0},
+    {0,2,0}, // move right
     {0,2,0},
     {0,2,0},
+    {2,0,0}, // move down
     {2,0,0},
     {2,0,0},
     {2,0,0},
     {2,0,0},
+    {2,0,0},
+    {0,-2,0}, // move left
     {0,-2,0},
     {0,-2,0},
     {0,-2,0},
     {0,-2,0},
     {0,-2,0},
+    {0,-2,0},
+    {-2,0,0}, // move up
     {-2,0,0},
     {-2,0,0},
     {-2,0,0},
     {-2,0,0},
+    {-2,0,0},
+    {0,2,0}, // move right
     {0,2,0},
     {0,2,0},
-    {DRAW_END_CMD,DRAW_END_CMD,DRAW_END_CMD}
+    {0,2,0},
+    {DRAW_END_CMD,DRAW_END_CMD,DRAW_END_CMD}  // pause
 };
 
 // Define the global that gives access to the student's name
