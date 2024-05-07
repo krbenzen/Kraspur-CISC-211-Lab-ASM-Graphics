@@ -49,6 +49,11 @@ static char * col0 = "             111111111122222222223333333333444444444455555
 static char * col1 = "   0123456789012345678901234567890123456789012345678901234567890123\r\n";
 static char * col2 = "  |----------------------------------------------------------------|\r\n";
 
+static char * hideCursor = "\x1B[?25l\x1B[K";
+// tried erasing the screen, but that caused annoying display blink
+// static char * eraseScreen = "\x1B[0J";  // erase from cursor to end of screen
+static char * showCursor = "\x1B[?25h";
+
 static uint8_t txBuffer[MAX_PRINT_LEN] = {0};
 
 // define an array of rows of characters, with an extra char for terminating null
@@ -79,7 +84,7 @@ static char pixelArray[DRAW_BUF_PIX_HEIGHT*(DRAW_BUF_PIX_WIDTH+ROW_PREAMBLE_LEN+
     banner.
  */
 
-uint64_t rotate(uint64_t v, int n) 
+static uint64_t rotate(uint64_t v, int n) 
 {
     while(n<0) n += 64;
     // n = n & 63U;
@@ -151,6 +156,8 @@ void printBuf (char * namePtr,
         strcat(pixelArray,"|\r\n");
     }
     snprintf((char*)txBuffer, MAX_PRINT_LEN,
+            "%s"   // hide cursor
+            // "%s"   // erase from cursor to end of screen
             "==== %s: Frame Number: %4ld; cmd: [u/d: %ld] [l/r: %ld] [rst: %ld]\r\n"
             "buf pointer:  0x%" PRIXPTR "\r\n"
             "%s"
@@ -158,12 +165,16 @@ void printBuf (char * namePtr,
             "%s"
             "%s"
             "%s"
+            "%s"   // show cursor
             "\x1B[26A", // move the cursor NN rows up, back to the top of the output
+            hideCursor,
+            //  eraseScreen,
             namePtr, frameNum, cmd[0], cmd[1], cmd[2],
             (uintptr_t) buf,
             col0, col1, col2,
             pixelArray,
-            col2);
+            col2,
+            showCursor);
     printAndWait((char*)txBuffer,txCompletePtr);
 }
 
