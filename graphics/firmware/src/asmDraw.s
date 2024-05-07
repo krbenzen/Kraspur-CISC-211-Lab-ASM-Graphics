@@ -36,31 +36,9 @@ asmFrameCounter: .word 0
 .type rowA00ptr,%gnu_unique_object
 rowA00ptr: .word rowA00
 
-.if 0
-// UFO!!!
-rowA00: .word 0b00000011110000000000000000000000,0b00000000000000000000000000000000
-rowA01: .word 0b00000100001000000000000000000000,0b00000000000000000000000000000000
-rowA02: .word 0b01111111111111100000000000000000,0b00000000000000000000000000000000
-rowA03: .word 0b10000000000000010000000000000000,0b00000000000000000000000000000000
-rowA04: .word 0b10000000000000010000000000000000,0b00000000000000000000000000000000
-rowA05: .word 0b01111111111111100000000000000000,0b00000000000000000000000000000000
-rowA06: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
-rowA07: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
-rowA08: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
-rowA09: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
-rowA10: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
-rowA11: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
-rowA12: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
-rowA13: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
-rowA14: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
-rowA15: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
-rowA16: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
-rowA17: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
-rowA18: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
-rowA19: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
-.endif
-
 // Flying Saucer!!!
+// If you choose to modify this starting graphic, make sure your replacement
+// is exactly 2 words wide and 20 rows high, just like this one.
 rowA00: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
 rowA01: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
 rowA02: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
@@ -82,12 +60,13 @@ rowA17: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000
 rowA18: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
 rowA19: .word 0b00000000000000000000000000000000,0b00000000000000000000000000000000
 
- 
+
 // display buffers 0 and 1: 2 words (64 bits) wide, by 20 words high,
 // initialized at boot time to pre-determined values
 // REMEMBER! These are only initialized once, before the first time asmDraw
 // is called. If you want to clear them (i.e. set all bits to 0), you need to
 // add a function to do this in your assembly code.
+ 
 buf0: .space NUM_BYTES_IN_BUF, 0xF0
 buf1: .space NUM_BYTES_IN_BUF, 0x0F
 
@@ -140,36 +119,47 @@ Inputs: r0: upDown:    -N: move up (towards row00) N pixels
 .type asmDraw,%function
 asmDraw:   
 
+    // Students: The code below is provided as a starting point. It ignores
+    //           the inputs in r0, r1, and r2. It just alternates between
+    //           buf0 and buf1 and returns the addresses of one or the
+    //           other buffer. The C code displays the default values stored
+    //           in those buffers. You can completely delete this code and 
+    //           replace it with your own creation.
+    
     // save the caller's registers, as required by the ARM calling convention
     push {r4-r11,LR}
     
     cbz r2, getNextFrame
     
-    @ reset the frame counter
+    // reset the frame counter
     LDR r4,=asmFrameCounter
     LDR r5,=0
     STR r5,[r4]
-    @ TODO: copy rowA** data to buf0
-    @ for now, just return whatever's there
+    // TODO: copy rowA** data to buf0
+    // for now, just use whatever is currently stored in buf0
     LDR r0,=buf0
     b done
     
 getNextFrame:
-    @ increment the frame counter
+    // This is where you decide what to do in the next animation frame.
+    // increment the frame counter
     LDR r4,=asmFrameCounter
     LDR r5,[r4]
     ADD r5,r5,1
-    STR r5,[r4]  @ store it back to mem
+    STR r5,[r4]  // store it back to mem
     
-    LDR r0,=buf0 @ set the return value to buf0
-    @ if the cycle count is an odd number set it to the alternate buffer
+    LDR r0,=buf0 // set the return value to buf0
+    // if the cycle count is an odd number set it to the alternate buffer
     TST r5,1
     LDRNE r0,=buf1 
-    B done @ branch for clarity...
+    B done // branch for clarity...
         
     done:
     
-    // if you just want to see the UFO, uncomment the next line
+    // Students:
+    // If you just want to see the UFO, uncomment the next line
+    // But this is only for demonstration purposes! Your final code should
+    // shold flip between buf0 and buf1 and return one of those two.
     // LDR r0,=rowA00
  
     // restore the caller's registers, as required by the ARM calling convention
