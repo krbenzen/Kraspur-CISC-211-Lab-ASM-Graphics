@@ -196,13 +196,13 @@ int main ( void )
 
             // bufPtr = asmDraw(cmd[0], cmd[1], cmd[2]);
 
-    #if PROF_MODE   // call the C demo routine (in PROF repo only)
+#if PROF_MODE   // call the C demo routine (in PROF repo only)
             bufPtr = cDraw(scene1[commandCount]);
-    #else           // call student's asm draw routine
+#else           // call student's asm draw routine
             bufPtr = asmDraw(scene1[commandCount][0], 
                     scene1[commandCount][1], 
                     scene1[commandCount][2]); 
-    #endif
+#endif
 
             printBuf(nameStrPtr, bufPtr, idleCount, scene1[commandCount], use32bitMode,
                     &isUSARTTxComplete);
