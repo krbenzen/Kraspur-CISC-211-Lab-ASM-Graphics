@@ -134,7 +134,7 @@ asmDraw:
     /* save the caller's registers, as required by the ARM calling convention */
     push {r4-r11,LR}
     
-    cbz r2, getNextFrame
+    cbz r2, getNextFrame /* if the reset flag in r2 was NOT set, get the next frame */
     
     /* reset the frame counter */
     LDR r4,=asmFrameCounter
@@ -156,8 +156,8 @@ getNextFrame:
     
     /* increment the frame counter */
     LDR r4,=asmFrameCounter
-    LDR r5,[r4]
-    ADD r5,r5,1
+    LDR r5,[r4]  /* load counter from mem */
+    ADD r5,r5,1  /* incr the counter */
     STR r5,[r4]  /* store it back to mem */
     
     LDR r0,=buf0 /* set the return value to buf0 */
@@ -170,8 +170,8 @@ getNextFrame:
     
     /* STUDENTS:
      * If you just want to see the UFO, uncomment the next line.
-     * But this is ONLY for demonstration purposes! Your final code should
-     * shold flip between buf0 and buf1 and return one of those two. */
+     * But this is ONLY for demonstration purposes! Your final code
+     * should flip between buf0 and buf1 and return one of those two. */
     
     /* LDR r0,=rowA00 */
  
