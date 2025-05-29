@@ -12,7 +12,7 @@
 .type nameStr,%gnu_unique_object
     
 /*** STUDENTS: Change the next line to your name!  **/
-nameStr: .asciz "Inigo Montoya"  
+nameStr: .asciz "Benzen Raspur"  
 .align
  
 /* initialize a global variable that C can access to print the nameStr */
@@ -135,12 +135,22 @@ asmDraw:
     push {r4-r11,LR}
     
     cbz r2, getNextFrame /* if the reset flag in r2 was NOT set, get the next frame */
+
     
     /* reset the frame counter */
     LDR r4,=asmFrameCounter
     LDR r5,=0
     STR r5,[r4]
     /* TODO: copy rowA** data to buf0 */
+
+    LDR r4, =ufoTotalMoves
+    STR r5, [r4]
+    LDR r4, =ufoRowOffset
+    STR r5, [r4]
+    SUBS r5, r5, #1             @ r5 = -1
+    LDR  r4, =ufoDirection
+    STR  r5, [r4]
+    
     /* for now, just use whatever is currently stored in buf0 */
     LDR r0,=buf0
     b done
@@ -150,21 +160,24 @@ getNextFrame:
      *  animation frame. */
     
     /* STUDENT CODE BELOW THIS LINE vvvvvvvvvvvvvvvvvvv */
-    
+       BL   updateUfoPosition
     
     /* STUDENT CODE ABOVE THIS LINE ^^^^^^^^^^^^^^^^^^^ */
     
     /* increment the frame counter */
     LDR r4,=asmFrameCounter
     LDR r5,[r4]  /* load counter from mem */
-    ADD r5,r5,1  /* incr the counter */
+    ADD r5,r5,#1  /* incr the counter */
     STR r5,[r4]  /* store it back to mem */
     
-    LDR r0,=buf0 /* set the return value to buf0 */
-    /* if the cycle count is an odd number set it to the alternate buffer */
-    TST r5,1
-    LDRNE r0,=buf1 
-    B done /* branch for clarity... in case someone adds code after this. */
+    LDR r0, =buf0
+    TST r5, #1
+    LDRNE r0, =buf1              /* choose buffer */
+
+    /*draw sprite into the chosen buffer*/
+    LDR  r1, =ufoRowOffset
+    LDR  r1, [r1]                /* r1 = signed offset */
+    BL   copySpriteWithOffset
         
     done:
     
@@ -180,10 +193,102 @@ getNextFrame:
 
     mov pc, lr	 /* asmEncrypt return to caller */
    
+/*  Movement state */
+        .data
+        .align
+ufoRowOffset:   .word 0
+ufoDirection:   .word -1
+ufoTotalMoves:  .word 0
 
-/**********************************************************************/   
+        .text
+        .align
+
+/* updateUfoPosition */
+        .global updateUfoPosition
+        .type   updateUfoPosition,%function
+updateUfoPosition:
+        push {r4-r6,lr}
+        ldr  r4, =ufoTotalMoves
+        ldr  r5, [r4]
+        cmp  r5, #10
+        bge  posDone
+        adds r5, r5, #1
+        str  r5, [r4]
+        ldr  r4, =ufoDirection
+        ldr  r5, [r4]
+        ldr  r6, =ufoRowOffset
+        ldr  r0, [r6]
+        adds r0, r0, r5
+        str  r0, [r6]
+        movs r3, #5
+        rsbs r3, r3, #0
+        cmp  r0, r3
+        bne  chkBottom
+        movs r5, #1
+        str  r5, [r4]
+        b    posDone
+chkBottom:
+        cmp  r0, #0
+        bne  posDone
+        ldr  r3, =ufoTotalMoves
+        ldr  r3, [r3]
+        cmp  r3, #10
+        bne  posDone
+        movs r5, #0
+        str  r5, [r4]
+posDone:
+        pop  {r4-r6,lr}
+        bx   lr
+
+
+/* copySpriteWithOffset */
+        .global copySpriteWithOffset
+        .type   copySpriteWithOffset,%function
+copySpriteWithOffset:
+        push {r4-r11,lr}
+        ldr  r4, =NUM_WORDS_IN_BUF
+        movs r5, #0
+        mov  r6, r0
+zeroLoop:
+        cmp  r4, #0
+        beq  zeroDone
+        str  r5, [r6], #4
+        subs r4, r4, #1
+        b    zeroLoop
+zeroDone:
+        mov  r4, r1
+        cmp  r4, #0
+        bmi  offsetUp
+        mov  r5, r4
+        movs r7, #0
+        b    computeLen
+offsetUp:
+        rsbs r4, r4, #0
+        movs r5, #0
+        mov  r7, r4
+computeLen:
+        ldr  r4, =20
+        subs r4, r4, r5
+        subs r4, r4, r7
+        cmp  r4, #0
+        ble  copyDone
+        ldr  r6, =rowA00
+        add  r6, r6, r7, lsl #3
+        add  r8, r0, r5, lsl #3
+copyLoop:
+        cmp  r4, #0
+        beq  copyDone
+        ldmia r6!, {r9, r10}
+        stmia r8!, {r9, r10}
+        subs r4, r4, #1
+        b    copyLoop
+copyDone:
+        pop  {r4-r11,lr}
+        bx   lr
+
+
+/**********************************************************************/
 .end  /* The assembler will not process anything after this directive!!! */
-           
 
 
 
